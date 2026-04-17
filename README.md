@@ -19,7 +19,13 @@ bun install
 
 ### 2. Configure environment variables
 
-Create a `.env` file in the root directory with your Pi-hole app password:
+Copy the example environment file and update the values:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and set your Pi-hole app password:
 
 ```
 PIHOLE_APP_PASSWORD=your_pihole_app_password
