@@ -14,7 +14,7 @@ export interface IPiholeService {
 
 export class PiholeService implements IPiholeService {
   private readonly password: string;
-  private readonly baseUrl = "http://192.168.1.88";
+  private readonly baseUrl: string;
   private sessionId: string | null = null;
   private csrf: string | null = null;
 
@@ -27,6 +27,7 @@ export class PiholeService implements IPiholeService {
    */
   constructor(piholeAppPassword: string) {
     this.password = piholeAppPassword;
+    this.baseUrl = process.env.PIHOLE_BASE_URL || "http://localhost";
   }
 
   private async fetch(uri: string, init?: RequestInit): Promise<Response> {
