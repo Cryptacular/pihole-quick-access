@@ -64,6 +64,66 @@ bun build ./src/index.ts --outdir=./dist --target=bun
 bun start
 ```
 
+## Running on Raspberry Pi
+
+### Running in the Background with systemd
+
+Create a systemd service file:
+
+```bash
+sudo nano /etc/systemd/system/pihole-quick-access.service
+```
+
+Add the following content:
+
+```ini
+[Unit]
+Description=Pi-hole Quick Access Dashboard
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/path/to/pihole-quick-access
+ExecStart=bun start
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Open the service file for editing:
+
+```bash
+sudo systemctl edit pihole-quick-access --force
+```
+
+Add the following content to set the PATH:
+
+```ini
+[Service]
+Environment=PATH=$HOME/.bun/bin:$PATH
+```
+
+Enable and start the service:
+
+```bash
+sudo systemctl enable pihole-quick-access
+sudo systemctl start pihole-quick-access
+```
+
+Check the status:
+
+```bash
+sudo systemctl status pihole-quick-access
+```
+
+View logs:
+
+```bash
+journalctl -u pihole-quick-access -f
+```
+
 ## Tech Stack
 
 - [Bun](https://bun.sh) - All-in-one JavaScript runtime
