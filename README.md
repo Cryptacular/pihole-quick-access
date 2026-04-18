@@ -68,13 +68,20 @@ bun start
 
 ### Running in the Background with systemd
 
+Find out where your Bun executable lives:
+
+```bash
+which bun
+# This will likely be something like /home/pi/.bun/bin/bun
+```
+
 Create a systemd service file:
 
 ```bash
 sudo nano /etc/systemd/system/pihole-quick-access.service
 ```
 
-Add the following content:
+Add the following content and be sure to check the path to Bun is correct for `ExecStart`:
 
 ```ini
 [Unit]
@@ -84,25 +91,12 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/path/to/pihole-quick-access
-ExecStart=bun start
+ExecStart=/home/pi/.bun/bin/bun start
 Restart=always
 RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
-```
-
-Open the service file for editing:
-
-```bash
-sudo systemctl edit pihole-quick-access --force
-```
-
-Add the following content to set the PATH:
-
-```ini
-[Service]
-Environment=PATH=$HOME/.bun/bin:$PATH
 ```
 
 Enable and start the service:
