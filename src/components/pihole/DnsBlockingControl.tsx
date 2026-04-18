@@ -6,11 +6,12 @@ import { Item, ItemContent, ItemMedia, ItemTitle } from "../ui/item";
 import { ShieldCheckIcon, ShieldCloseIcon, LoaderIcon } from "lucide-react";
 
 export const DnsBlockingControl = () => {
-  const [isBlocking, setIsBlocking] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(true);
   const [blockingPeriodInMins, setBlockingPeriodInMins] = useState<number>(5);
   const [loadingState, setLoadingState] = useState<
     "LOADING" | "SUCCESS" | "ERROR"
   >("LOADING");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [timerRemaining, setTimerRemaining] = useState<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -19,19 +20,21 @@ export const DnsBlockingControl = () => {
 
     if (!res.ok) {
       setLoadingState("ERROR");
-      console.error("Could not fetch DNS blocking status");
+      setErrorMessage(`Could not fetch DNS blocking status (${res.status})`);
       return;
     }
 
     const body = await res.json();
 
     if (!body) {
-      console.error("Response body is empty");
+      setLoadingState("ERROR");
+      setErrorMessage("Response body is empty");
       return;
     }
 
     if (body.blocking === "failed" || body.blocking === "unknown") {
-      console.error("Failed to fetch DNS blocking status");
+      setLoadingState("ERROR");
+      setErrorMessage("Failed to fetch DNS blocking status");
       return;
     }
 
@@ -64,6 +67,7 @@ export const DnsBlockingControl = () => {
 
       if (!res.ok) {
         setLoadingState("ERROR");
+        setErrorMessage(`Could not enable DNS blocking (${res.status})`);
         return;
       }
 
@@ -73,6 +77,7 @@ export const DnsBlockingControl = () => {
       setLoadingState("SUCCESS");
     } catch (err) {
       setLoadingState("ERROR");
+      setErrorMessage("Could not enable DNS blocking");
     }
   };
 
@@ -92,6 +97,7 @@ export const DnsBlockingControl = () => {
 
       if (!res.ok) {
         setLoadingState("ERROR");
+        setErrorMessage(`Could not disable DNS blocking (${res.status})`);
         return;
       }
 
@@ -105,6 +111,7 @@ export const DnsBlockingControl = () => {
       }
     } catch (err) {
       setLoadingState("ERROR");
+      setErrorMessage("Could not disable DNS blocking");
     }
   };
 
@@ -183,32 +190,40 @@ export const DnsBlockingControl = () => {
         </Button>
       </div>
 
-      <Item
-        className={
-          loadingState === "LOADING"
-            ? "bg-muted/50"
-            : isBlocking
-              ? "bg-green-500/20"
-              : "bg-red-500/20"
-        }
-      >
-        <ItemMedia>
-          {loadingState === "LOADING" ? (
-            <LoaderIcon size="16" className="animate-spin" />
-          ) : isBlocking ? (
-            <ShieldCheckIcon size="16" />
-          ) : (
-            <ShieldCloseIcon size="16" />
-          )}
-        </ItemMedia>
-        <ItemContent>
-          <ItemTitle>
-            {loadingState === "LOADING"
-              ? "Loading..."
-              : `Blocking ${isBlocking ? "enabled" : "disabled"}${!isBlocking && timerRemaining !== null && timerRemaining > 0 ? ` (${formatTime(timerRemaining)})` : ""}`}
-          </ItemTitle>
-        </ItemContent>
-      </Item>
+      {loadingState === "ERROR" ? (
+        <Item className="bg-red-500/20">
+          <ItemContent>
+            <ItemTitle>{errorMessage}</ItemTitle>
+          </ItemContent>
+        </Item>
+      ) : (
+        <Item
+          className={
+            loadingState === "LOADING"
+              ? "bg-muted/50"
+              : isBlocking
+                ? "bg-green-500/20"
+                : "bg-red-500/20"
+          }
+        >
+          <ItemMedia>
+            {loadingState === "LOADING" ? (
+              <LoaderIcon size="16" className="animate-spin" />
+            ) : isBlocking ? (
+              <ShieldCheckIcon size="16" />
+            ) : (
+              <ShieldCloseIcon size="16" />
+            )}
+          </ItemMedia>
+          <ItemContent>
+            <ItemTitle>
+              {loadingState === "LOADING"
+                ? "Loading..."
+                : `Blocking ${isBlocking ? "enabled" : "disabled"}${!isBlocking && timerRemaining !== null && timerRemaining > 0 ? ` (${formatTime(timerRemaining)})` : ""}`}
+            </ItemTitle>
+          </ItemContent>
+        </Item>
+      )}
     </div>
   );
 };
